@@ -14,7 +14,7 @@ LDFLAGS ?= '-s -w \
 # Docker
 DOCKER_REPO_NAME ?= ks6088ts
 DOCKER_IMAGE_NAME ?= workshop-kubernetes
-DOCKER_COMMAND ?=
+DOCKER_COMMAND ?= /app sandbox http --help
 
 # Tools
 TOOLS_DIR ?= /usr/local/bin

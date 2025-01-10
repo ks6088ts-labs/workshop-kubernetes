@@ -11,4 +11,4 @@ RUN make build OUTPUT=/go/bin/app
 FROM gcr.io/distroless/static-debian12:nonroot
 
 COPY --from=build /go/bin/app /
-CMD ["/app"]
+CMD ["/app", "sandbox", "http"]
