@@ -7,7 +7,7 @@
 [![docker-release](https://github.com/ks6088ts-labs/workshop-kubernetes/actions/workflows/docker-release.yaml/badge.svg)](https://github.com/ks6088ts-labs/workshop-kubernetes/actions/workflows/docker-release.yaml)
 [![ghcr-release](https://github.com/ks6088ts-labs/workshop-kubernetes/actions/workflows/ghcr-release.yaml/badge.svg)](https://github.com/ks6088ts-labs/workshop-kubernetes/actions/workflows/ghcr-release.yaml)
 
-# template-go
+# workshop-kubernetes
 
 A GitHub template repository for Go
 

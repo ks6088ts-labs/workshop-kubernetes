@@ -4,7 +4,7 @@ on:
     tags:
       - "v*"
 env:
-  IMAGE_NAME: template-go
+  IMAGE_NAME: workshop-kubernetes
 jobs:
   ghcr:
     runs-on: ubuntu-latest

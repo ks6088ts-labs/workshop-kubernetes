@@ -13,7 +13,7 @@ LDFLAGS ?= '-s -w \
 
 # Docker
 DOCKER_REPO_NAME ?= ks6088ts
-DOCKER_IMAGE_NAME ?= template-go
+DOCKER_IMAGE_NAME ?= workshop-kubernetes
 DOCKER_COMMAND ?=
 
 # Tools
@@ -25,7 +25,7 @@ TRIVY_VERSION ?= 0.58.1
 
 # Misc
 OUTPUT_DIR ?= dist
-OUTPUT ?= $(OUTPUT_DIR)/template-go
+OUTPUT ?= $(OUTPUT_DIR)/workshop-kubernetes
 
 .PHONY: help
 help:
