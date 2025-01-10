@@ -154,6 +154,39 @@ kubectl port-forward workshop-kubernetes 8080:8080
 
 # Verify the app
 curl http://localhost:8080 -v
+
+# Delete the app
+kubectl delete -f manifests/workshop-kubernetes.yaml
+```
+
+#### Grafana
+
+[Deploy Grafana on Kubernetes](https://grafana.com/docs/grafana/latest/setup-grafana/installation/kubernetes/)
+
+```shell
+NAMESPACE=grafana
+
+# Create the namespace
+kubectl create namespace $NAMESPACE
+
+# Deploy Grafana
+kubectl apply -f manifests/grafana.yaml --namespace $NAMESPACE
+
+# Verify the deployment
+kubectl get pvc --namespace=$NAMESPACE
+kubectl get deployments --namespace=$NAMESPACE
+kubectl get svc --namespace=$NAMESPACE
+kubectl get all --namespace=$NAMESPACE
+
+# Forward the port
+kubectl port-forward service/grafana 3000:3000 --namespace=$NAMESPACE
+# Access the Grafana dashboard at http://localhost:3000
+
+# Delete the deployment
+kubectl delete -f manifests/grafana.yaml --namespace $NAMESPACE
+
+# Delete the namespace
+kubectl delete namespace $NAMESPACE
 ```
 
 # References
