@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: workshop-kubernetes
+spec:
+  containers:
+  - name: workshop-kubernetes
+    image: ks6088ts/workshop-kubernetes:latest
+    ports:
+    - containerPort: 8080

@@ -125,6 +125,37 @@ make build
 ./dist/workshop-kubernetes sandbox http --port 8888
 ```
 
+### Run apps in Kubernetes
+
+#### nginx
+
+```shell
+# Deploy the nginx app
+kubectl apply -f manifests/nginx.yaml
+
+# Forward the port
+kubectl port-forward nginx 8080:80
+
+# Verify the app
+curl http://localhost:8080 -v
+
+# Delete the app
+kubectl delete -f manifests/nginx.yaml
+```
+
+#### workshop-kubernetes
+
+```shell
+# Deploy the nginx app
+kubectl apply -f manifests/workshop-kubernetes.yaml
+
+# Forward the port
+kubectl port-forward nginx 8080:8080
+
+# Verify the app
+curl http://localhost:8080 -v
+```
+
 # References
 
 - [Docker/Kubernetes 実践コンテナ開発入門 改訂新版](https://gihyo.jp/book/2024/978-4-297-14017-5)
