@@ -148,6 +148,7 @@ kubectl delete -f manifests/nginx.yaml
 ```shell
 # Deploy the workshop-kubernetes app
 kubectl apply -f manifests/workshop-kubernetes.yaml
+kubectl apply -f manifests/cronjob.yaml
 
 # Forward the port
 kubectl port-forward workshop-kubernetes 8080:8080
@@ -155,8 +156,12 @@ kubectl port-forward workshop-kubernetes 8080:8080
 # Verify the app
 curl http://localhost:8080 -v
 
+# Watch for changes in the pods
+kubectl get pods --watch
+
 # Delete the app
 kubectl delete -f manifests/workshop-kubernetes.yaml
+kubectl delete -f manifests/cronjob.yaml
 ```
 
 #### Grafana
