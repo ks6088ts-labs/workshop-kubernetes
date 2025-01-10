@@ -1,0 +1,13 @@
+name: ShellCheck
+
+on: [push]
+
+jobs:
+  ShellCheck:
+    name: ShellCheck
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout codes
+        uses: actions/checkout@v2
+      - name: Run ShellCheck
+        uses: ludeeus/action-shellcheck@master
