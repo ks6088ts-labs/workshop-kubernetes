@@ -99,6 +99,32 @@ kubectl proxy
 
 Access the Kubernetes dashboard at http://localhost:8001/api/v1/namespaces/kubernetes-dashboard/services/https:kubernetes-dashboard:/proxy/ after running the proxy.
 
+### Hands on Docker
+
+```shell
+# Run the nginx container
+docker run --rm --detach --publish 8080:80 --name web nginx:latest
+
+# Verify the container
+curl http://localhost:8080 -v
+
+# Stop the container
+docker stop web
+```
+
+### Run the Workshop CLI
+
+```shell
+# Build CLI
+make build
+
+# Help
+./dist/workshop-kubernetes --help
+
+# Run HTTP server from the CLI
+./dist/workshop-kubernetes sandbox http --port 8888
+```
+
 # References
 
 - [Docker/Kubernetes 実践コンテナ開発入門 改訂新版](https://gihyo.jp/book/2024/978-4-297-14017-5)

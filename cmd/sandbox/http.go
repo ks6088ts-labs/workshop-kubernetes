@@ -19,10 +19,12 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
-package cmd
+package sandbox
 
 import (
 	"fmt"
+	"log"
+	"net/http"
 
 	"github.com/spf13/cobra"
 )
@@ -30,28 +32,30 @@ import (
 // httpCmd represents the http command
 var httpCmd = &cobra.Command{
 	Use:   "http",
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
-
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+	Short: "Run HTTP Server",
+	Long:  `This is a sandbox command to run a simple HTTP server.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("http called")
+		// Parse flags
+		port, err := cmd.Flags().GetInt("port")
+		// handle error
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+			fmt.Fprintf(w, "Hello, world!")
+		})
+
+		log.Printf("Starting server on port %d\n", port)
+		err = http.ListenAndServe(fmt.Sprintf(":%d", port), nil)
+		if err != nil {
+			log.Fatal(err)
+		}
 	},
 }
 
 func init() {
 	sandboxCmd.AddCommand(httpCmd)
 
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// httpCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// httpCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	httpCmd.Flags().IntP("port", "p", 8080, "Port number to listen")
 }
