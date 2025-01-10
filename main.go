@@ -21,7 +21,7 @@ THE SOFTWARE.
 */
 package main
 
-import "github.com/ks6088ts/template-go/cmd"
+import "github.com/ks6088ts-labs/workshop-kubernetes/cmd"
 
 func main() {
 	cmd.Execute()

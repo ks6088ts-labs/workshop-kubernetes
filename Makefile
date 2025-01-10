@@ -7,13 +7,13 @@ GOOS ?= $(shell go env GOOS)
 GOARCH ?= $(shell go env GOARCH)
 GOBUILD ?= GOOS=$(GOOS) GOARCH=$(GOARCH) CGO_ENABLED=0 go build
 LDFLAGS ?= '-s -w \
-	-X "github.com/ks6088ts/template-go/internal.Revision=$(GIT_REVISION)" \
-	-X "github.com/ks6088ts/template-go/internal.Version=$(GIT_TAG)" \
+	-X "github.com/ks6088ts-labs/workshop-kubernetes/internal.Revision=$(GIT_REVISION)" \
+	-X "github.com/ks6088ts-labs/workshop-kubernetes/internal.Version=$(GIT_TAG)" \
 '
 
 # Docker
 DOCKER_REPO_NAME ?= ks6088ts
-DOCKER_IMAGE_NAME ?= template-go
+DOCKER_IMAGE_NAME ?= workshop-kubernetes
 DOCKER_COMMAND ?=
 
 # Tools
@@ -25,7 +25,7 @@ TRIVY_VERSION ?= 0.58.1
 
 # Misc
 OUTPUT_DIR ?= dist
-OUTPUT ?= $(OUTPUT_DIR)/template-go
+OUTPUT ?= $(OUTPUT_DIR)/workshop-kubernetes
 
 .PHONY: help
 help:
