@@ -146,11 +146,11 @@ kubectl delete -f manifests/nginx.yaml
 #### workshop-kubernetes
 
 ```shell
-# Deploy the nginx app
+# Deploy the workshop-kubernetes app
 kubectl apply -f manifests/workshop-kubernetes.yaml
 
 # Forward the port
-kubectl port-forward nginx 8080:8080
+kubectl port-forward workshop-kubernetes 8080:8080
 
 # Verify the app
 curl http://localhost:8080 -v
