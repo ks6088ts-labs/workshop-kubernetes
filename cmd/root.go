@@ -25,7 +25,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/ks6088ts/template-go/cmd/sandbox"
+	"github.com/ks6088ts-labs/workshop-kubernetes/cmd/sandbox"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )

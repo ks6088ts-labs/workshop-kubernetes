@@ -24,7 +24,7 @@ package cmd
 import (
 	"fmt"
 
-	"github.com/ks6088ts/template-go/internal"
+	"github.com/ks6088ts-labs/workshop-kubernetes/internal"
 	"github.com/spf13/cobra"
 )
 
