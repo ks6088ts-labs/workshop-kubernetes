@@ -45,7 +45,63 @@ kubectl config -h
 kubectl config get-contexts
 ```
 
+### Deploy Kubernetes Dashboard
+
+[github.com/kubernetes/dashboard > aio/deploy/recommended.yaml](https://github.com/kubernetes/dashboard/blob/v2.7.0/aio/deploy/recommended.yaml)
+
+```shell
+# Deploy the Kubernetes dashboard
+kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/refs/tags/v2.7.0/aio/deploy/recommended.yaml
+
+# Verify the deployment
+kubectl get pods --namespace kubernetes-dashboard
+```
+
+Create [dashboard-user.yaml](../manifests/dashboard-user.yaml) file with the following content.
+
+```yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: admin-user
+  namespace: kubernetes-dashboard
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: admin-user
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: cluster-admin
+subjects:
+  - kind: ServiceAccount
+    name: admin-user
+    namespace: kubernetes-dashboard
+```
+
+Apply the manifest file.
+
+```shell
+# Apply the dashboard user
+kubectl apply -f manifests/dashboard-user.yaml
+
+# Create a token for the dashboard user
+TOKEN=$(kubectl -n kubernetes-dashboard create token admin-user)
+```
+
+Run the following command to start a proxy.
+
+```shell
+# Run the proxy
+kubectl proxy
+```
+
+Access the Kubernetes dashboard at http://localhost:8001/api/v1/namespaces/kubernetes-dashboard/services/https:kubernetes-dashboard:/proxy/ after running the proxy.
+
 # References
 
+- [Docker/Kubernetes 実践コンテナ開発入門 改訂新版](https://gihyo.jp/book/2024/978-4-297-14017-5)
+  - https://github.com/gihyodocker
 - [つくって、壊して、直して学ぶ Kubernetes 入門](https://www.shoeisha.co.jp/book/detail/9784798183961)
   - https://github.com/aoi1/bbf-kubernetes
