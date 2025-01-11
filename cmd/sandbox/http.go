@@ -43,6 +43,16 @@ var httpCmd = &cobra.Command{
 			log.Fatal(err)
 		}
 
+		http.HandleFunc("/healthz", func(w http.ResponseWriter, r *http.Request) {
+			if r.URL.Path != "/healthz" {
+				http.NotFound(w, r)
+				return
+			}
+			w.WriteHeader(http.StatusOK)
+			fmt.Fprintf(w, "OK")
+			log.Printf("Health Status OK")
+		})
+
 		http.Handle("/metrics", promhttp.Handler())
 
 		http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
