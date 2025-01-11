@@ -50,7 +50,6 @@ var httpCmd = &cobra.Command{
 			}
 			w.WriteHeader(http.StatusOK)
 			fmt.Fprintf(w, "OK")
-			fmt.Fprintf(w, "OK")
 		})
 
 		http.Handle("/metrics", promhttp.Handler())
