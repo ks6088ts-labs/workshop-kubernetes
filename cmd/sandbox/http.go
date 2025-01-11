@@ -26,6 +26,7 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/spf13/cobra"
 )
 
@@ -41,6 +42,8 @@ var httpCmd = &cobra.Command{
 		if err != nil {
 			log.Fatal(err)
 		}
+
+		http.Handle("/metrics", promhttp.Handler())
 
 		http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 			fmt.Fprintf(w, "Hello, world!")
