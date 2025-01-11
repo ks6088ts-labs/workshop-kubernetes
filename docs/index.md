@@ -196,7 +196,8 @@ kubectl delete namespace $NAMESPACE
 
 ### Use helm to deploy apps
 
-- [Helm](https://helm.sh/docs/intro/quickstart/)
+- [Helm > Quickstart Guide](https://helm.sh/docs/intro/quickstart/)
+- [つくって、壊して、直して学ぶ Kubernetes 入門 > Chapter 11 　オブザーバビリティとモニタリングに触れてみよう](https://www.shoeisha.co.jp/book/detail/9784798183961)
 
 ```shell
 # Add the Prometheus Helm repository
@@ -217,14 +218,32 @@ helm install kube-prometheus-stack \
 helm list -n $NAMESPACE
 kubectl get pod -n $NAMESPACE --watch
 
-# Access to the Grafana dashboard (username: admin, password: prom-operator)
-kubectl port-forward service/kube-prometheus-stack-grafana 3000:80 -n $NAMESPACE
-
 # Access to the Prometheus dashboard
 kubectl port-forward service/kube-prometheus-stack-prometheus 9090:9090 -n $NAMESPACE
 
+# Access to the Grafana dashboard (username: admin, password: prom-operator)
+kubectl port-forward service/kube-prometheus-stack-grafana 3000:80 -n $NAMESPACE
+
 # Delete the deployment
 helm uninstall kube-prometheus-stack -n $NAMESPACE
+```
+
+Collect metrics from the HTTP server.
+
+```shell
+# Launch HTTP server on develop namespace
+kubectl apply -f manifests/collect-metrics/namespace.yaml
+kubectl apply -f manifests/collect-metrics/http-server.yaml
+
+# Update the Prometheus configuration
+helm upgrade kube-prometheus-stack \
+  -f manifests/collect-metrics/kube-prometheus-stack-values.yaml \
+  -n $NAMESPACE \
+  prometheus-community/kube-prometheus-stack
+
+# Verify the deployment from Prometheus dashboard
+kubectl port-forward service/kube-prometheus-stack-prometheus 9090:9090 -n $NAMESPACE
+# Query `go_gc_duration_seconds{job="http-server"}` in the Prometheus dashboard
 ```
 
 # References
