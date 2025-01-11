@@ -217,6 +217,12 @@ helm install kube-prometheus-stack \
 helm list -n $NAMESPACE
 kubectl get pod -n $NAMESPACE --watch
 
+# Access to the Grafana dashboard (username: admin, password: prom-operator)
+kubectl port-forward service/kube-prometheus-stack-grafana 3000:80 -n $NAMESPACE
+
+# Access to the Prometheus dashboard
+kubectl port-forward service/kube-prometheus-stack-prometheus 9090:9090 -n $NAMESPACE
+
 # Delete the deployment
 helm uninstall kube-prometheus-stack -n $NAMESPACE
 ```
