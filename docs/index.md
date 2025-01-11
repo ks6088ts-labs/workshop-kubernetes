@@ -194,6 +194,33 @@ kubectl delete -f manifests/grafana.yaml --namespace $NAMESPACE
 kubectl delete namespace $NAMESPACE
 ```
 
+### Use helm to deploy apps
+
+- [Helm](https://helm.sh/docs/intro/quickstart/)
+
+```shell
+# Add the Prometheus Helm repository
+helm repo list
+helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+helm repo update
+
+# Create the namespace
+NAMESPACE=monitoring
+kubectl create ns $NAMESPACE
+
+# Deploy Prometheus
+helm install kube-prometheus-stack \
+  --namespace monitoring \
+  prometheus-community/kube-prometheus-stack
+
+# Verify the deployment
+helm list -n $NAMESPACE
+kubectl get pod -n $NAMESPACE --watch
+
+# Delete the deployment
+helm uninstall kube-prometheus-stack -n $NAMESPACE
+```
+
 # References
 
 - [Docker/Kubernetes 実践コンテナ開発入門 改訂新版](https://gihyo.jp/book/2024/978-4-297-14017-5)
