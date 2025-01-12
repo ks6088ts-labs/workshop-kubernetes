@@ -246,6 +246,54 @@ kubectl port-forward service/kube-prometheus-stack-prometheus 9090:9090 -n $NAME
 # Query `go_gc_duration_seconds{job="http-server"}` in the Prometheus dashboard
 ```
 
+### Use Argo CD for GitOps
+
+[Argo CD > Getting Started](https://argo-cd.readthedocs.io/en/stable/getting_started/)
+
+```shell
+NAMESPACE=argocd
+
+# Deploy Argo CD
+kubectl create namespace $NAMESPACE
+kubectl apply -n $NAMESPACE -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
+
+# Optional: Set default namespace
+kubectl config set-context --current --namespace=$NAMESPACE
+
+# Retrieve the initial password
+argocd admin initial-password -n $NAMESPACE
+
+# Access The Argo CD API Server: https://argo-cd.readthedocs.io/en/stable/getting_started/#3-access-the-argo-cd-api-server
+kubectl port-forward service/argocd-server 8080:443 -n $NAMESPACE
+```
+
+To create an application from a Git repository, refer to [Create An Application From A Git Repository](https://argo-cd.readthedocs.io/en/stable/getting_started/#6-create-an-application-from-a-git-repository).
+
+```shell
+# Login to Argo CD
+kubectl port-forward service/argocd-server 8080:443 -n $NAMESPACE
+argocd login localhost:8080 \
+  --username admin \
+  --password $PASSWORD
+
+# List the applications
+argocd app list
+
+# Create an application
+argocd app create guestbook \
+  --repo https://github.com/argoproj/argocd-example-apps.git \
+  --path guestbook \
+  --dest-server https://kubernetes.default.svc \
+  --dest-namespace default
+
+# Sync the application
+argocd app sync guestbook
+
+# Verify the deployment
+kubectl get svc
+kubectl port-forward service/guestbook-ui 8888:80
+```
+
 # References
 
 - [Docker/Kubernetes 実践コンテナ開発入門 改訂新版](https://gihyo.jp/book/2024/978-4-297-14017-5)
