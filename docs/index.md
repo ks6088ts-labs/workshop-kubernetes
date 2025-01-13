@@ -89,7 +89,7 @@ kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/refs/tag
 kubectl get pods --namespace kubernetes-dashboard
 ```
 
-Create [dashboard-user.yaml](../manifests/dashboard-user.yaml) file with the following content.
+Create [dashboard-user.yaml](../k8s/dashboard-user.yaml) file with the following content.
 
 ```yaml
 apiVersion: v1
@@ -116,7 +116,7 @@ Apply the manifest file.
 
 ```shell
 # Apply the dashboard user
-kubectl apply -f manifests/dashboard-user.yaml
+kubectl apply -f k8s/dashboard-user.yaml
 
 # Create a token for the dashboard user
 TOKEN=$(kubectl -n kubernetes-dashboard create token admin-user)
@@ -135,7 +135,7 @@ Access the Kubernetes dashboard at http://localhost:8001/api/v1/namespaces/kuber
 
 ```shell
 # Deploy the nginx app
-kubectl apply -f manifests/nginx.yaml
+kubectl apply -f k8s/nginx.yaml
 
 # Forward the port
 kubectl port-forward nginx 8080:80
@@ -144,15 +144,15 @@ kubectl port-forward nginx 8080:80
 curl http://localhost:8080 -v
 
 # Delete the app
-kubectl delete -f manifests/nginx.yaml
+kubectl delete -f k8s/nginx.yaml
 ```
 
 ### workshop-kubernetes CLI
 
 ```shell
 # Deploy the workshop-kubernetes app
-kubectl apply -f manifests/workshop-kubernetes.yaml
-kubectl apply -f manifests/cronjob.yaml
+kubectl apply -f k8s/workshop-kubernetes.yaml
+kubectl apply -f k8s/cronjob.yaml
 
 # Forward the port
 kubectl port-forward workshop-kubernetes 8080:8080
@@ -164,8 +164,8 @@ curl http://localhost:8080 -v
 kubectl get pods --watch
 
 # Delete the app
-kubectl delete -f manifests/workshop-kubernetes.yaml
-kubectl delete -f manifests/cronjob.yaml
+kubectl delete -f k8s/workshop-kubernetes.yaml
+kubectl delete -f k8s/cronjob.yaml
 ```
 
 ### Grafana
@@ -179,7 +179,7 @@ NAMESPACE=grafana
 kubectl create namespace $NAMESPACE
 
 # Deploy Grafana
-kubectl apply -f manifests/grafana.yaml --namespace $NAMESPACE
+kubectl apply -f k8s/grafana.yaml --namespace $NAMESPACE
 
 # Verify the deployment
 kubectl get pvc --namespace=$NAMESPACE
@@ -192,7 +192,7 @@ kubectl port-forward service/grafana 3000:3000 --namespace=$NAMESPACE
 # Access the Grafana dashboard at http://localhost:3000
 
 # Delete the deployment
-kubectl delete -f manifests/grafana.yaml --namespace $NAMESPACE
+kubectl delete -f k8s/grafana.yaml --namespace $NAMESPACE
 
 # Delete the namespace
 kubectl delete namespace $NAMESPACE
@@ -310,12 +310,12 @@ Collect metrics from the HTTP server.
 
 ```shell
 # Launch HTTP server on develop namespace
-kubectl apply -f manifests/collect-metrics/namespace.yaml
-kubectl apply -f manifests/collect-metrics/http-server.yaml
+kubectl apply -f k8s/collect-metrics/namespace.yaml
+kubectl apply -f k8s/collect-metrics/http-server.yaml
 
 # Update the Prometheus configuration
 helm upgrade kube-prometheus-stack \
-  -f manifests/collect-metrics/kube-prometheus-stack-values.yaml \
+  -f k8s/collect-metrics/kube-prometheus-stack-values.yaml \
   -n $NAMESPACE \
   prometheus-community/kube-prometheus-stack
 
