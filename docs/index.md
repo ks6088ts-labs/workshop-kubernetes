@@ -1,5 +1,35 @@
 # Workshop
 
+## Fundamentals
+
+### Hands on Docker
+
+```shell
+# Run the nginx container
+docker run --rm --detach --publish 8080:80 --name web nginx:latest
+
+# Verify the container
+curl http://localhost:8080 -v
+
+# Stop the container
+docker stop web
+```
+
+### Hands on Go
+
+Run the Workshop CLI
+
+```shell
+# Build CLI
+make build
+
+# Help
+./dist/workshop-kubernetes --help
+
+# Run HTTP server from the CLI
+./dist/workshop-kubernetes sandbox http --port 8888
+```
+
 ## Infrastructure
 
 ### Create Azure Kubernetes Service (AKS) Cluster
@@ -45,7 +75,9 @@ kubectl config -h
 kubectl config get-contexts
 ```
 
-### Deploy Kubernetes Dashboard
+## Deploy Applications
+
+### Kubernetes Dashboard
 
 [github.com/kubernetes/dashboard > aio/deploy/recommended.yaml](https://github.com/kubernetes/dashboard/blob/v2.7.0/aio/deploy/recommended.yaml)
 
@@ -99,35 +131,7 @@ kubectl proxy
 
 Access the Kubernetes dashboard at http://localhost:8001/api/v1/namespaces/kubernetes-dashboard/services/https:kubernetes-dashboard:/proxy/ after running the proxy.
 
-### Hands on Docker
-
-```shell
-# Run the nginx container
-docker run --rm --detach --publish 8080:80 --name web nginx:latest
-
-# Verify the container
-curl http://localhost:8080 -v
-
-# Stop the container
-docker stop web
-```
-
-### Run the Workshop CLI
-
-```shell
-# Build CLI
-make build
-
-# Help
-./dist/workshop-kubernetes --help
-
-# Run HTTP server from the CLI
-./dist/workshop-kubernetes sandbox http --port 8888
-```
-
-### Run apps in Kubernetes
-
-#### nginx
+### nginx
 
 ```shell
 # Deploy the nginx app
@@ -143,7 +147,7 @@ curl http://localhost:8080 -v
 kubectl delete -f manifests/nginx.yaml
 ```
 
-#### workshop-kubernetes
+### workshop-kubernetes CLI
 
 ```shell
 # Deploy the workshop-kubernetes app
@@ -164,7 +168,7 @@ kubectl delete -f manifests/workshop-kubernetes.yaml
 kubectl delete -f manifests/cronjob.yaml
 ```
 
-#### Grafana
+### Grafana
 
 [Deploy Grafana on Kubernetes](https://grafana.com/docs/grafana/latest/setup-grafana/installation/kubernetes/)
 
@@ -194,9 +198,83 @@ kubectl delete -f manifests/grafana.yaml --namespace $NAMESPACE
 kubectl delete namespace $NAMESPACE
 ```
 
-### Use helm to deploy apps
+### Argo CD
+
+[Argo CD > Getting Started](https://argo-cd.readthedocs.io/en/stable/getting_started/)
+
+```shell
+NAMESPACE=argocd
+
+# Deploy Argo CD
+kubectl create namespace $NAMESPACE
+
+# Set the namespace
+kubectl config set-context --current --namespace=$NAMESPACE
+
+# Install Argo CD
+kubectl apply -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
+
+# Access The Argo CD API Server: https://argo-cd.readthedocs.io/en/stable/getting_started/#3-access-the-argo-cd-api-server
+kubectl port-forward service/argocd-server 8080:443
+```
+
+To create an application from a Git repository, refer to [Create An Application From A Git Repository](https://argo-cd.readthedocs.io/en/stable/getting_started/#6-create-an-application-from-a-git-repository).
+
+```shell
+# Retrieve the initial password
+argocd admin initial-password
+
+# Set the password
+PASSWORD=YOUR_PASSWORD
+
+# Login to Argo CD
+argocd login localhost:8080 \
+  --username admin \
+  --password $PASSWORD \
+  --insecure
+
+# Update the password
+argocd account update-password
+
+# Delete the initial password
+kubectl delete secret argocd-initial-admin-secret -n $NAMESPACE
+
+# Logout
+argocd logout localhost:8080
+
+# Login to Argo CD
+argocd login localhost:8080 \
+  --username admin \
+  --password $PASSWORD \
+  --insecure
+
+# Create an application
+argocd app create guestbook \
+  --repo https://github.com/argoproj/argocd-example-apps.git \
+  --path guestbook \
+  --dest-server https://kubernetes.default.svc \
+  --dest-namespace default
+
+# List the applications
+argocd app list
+
+# Sync the application
+argocd app sync guestbook
+
+# Verify the deployment
+kubectl get svc
+kubectl port-forward service/guestbook-ui 8888:80
+
+# Delete the application
+argocd app delete guestbook --yes
+```
+
+## Use helm to deploy apps
 
 - [Helm > Quickstart Guide](https://helm.sh/docs/intro/quickstart/)
+
+### Prometheus
+
 - [つくって、壊して、直して学ぶ Kubernetes 入門 > Chapter 11 　オブザーバビリティとモニタリングに触れてみよう](https://www.shoeisha.co.jp/book/detail/9784798183961)
 
 ```shell
@@ -246,57 +324,33 @@ kubectl port-forward service/kube-prometheus-stack-prometheus 9090:9090 -n $NAME
 # Query `go_gc_duration_seconds{job="http-server"}` in the Prometheus dashboard
 ```
 
-### Use Argo CD for GitOps
+### Argo CD
 
-[Argo CD > Getting Started](https://argo-cd.readthedocs.io/en/stable/getting_started/)
+- [クラウドネイティブで実現する マイクロサービス開発・運用 実践ガイド > 7.2 　 Argo CD による GitOps の実装](https://gihyo.jp/book/2023/978-4-297-13783-0)
 
 ```shell
-NAMESPACE=argocd
+REPO_NAME=argo-cd
+helm repo add $REPO_NAME https://argoproj.github.io/argo-helm
+
+NAMESPACE=gitops
 
 # Deploy Argo CD
 kubectl create namespace $NAMESPACE
-kubectl apply -n $NAMESPACE -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
-
-# Optional: Set default namespace
+# Set the namespace
 kubectl config set-context --current --namespace=$NAMESPACE
 
-# Retrieve the initial password
-argocd admin initial-password -n $NAMESPACE
+helm install -n $NAMESPACE mygitops $REPO_NAME/argo-cd
 
-# Access The Argo CD API Server: https://argo-cd.readthedocs.io/en/stable/getting_started/#3-access-the-argo-cd-api-server
-kubectl port-forward service/argocd-server 8080:443 -n $NAMESPACE
-```
+helm list --all-namespaces
 
-To create an application from a Git repository, refer to [Create An Application From A Git Repository](https://argo-cd.readthedocs.io/en/stable/getting_started/#6-create-an-application-from-a-git-repository).
+# Access The Argo CD API Server
+kubectl port-forward service/mygitops-argocd-server 8080:443
 
-```shell
-# Login to Argo CD
-kubectl port-forward service/argocd-server 8080:443 -n $NAMESPACE
-argocd login localhost:8080 \
-  --username admin \
-  --password $PASSWORD
-
-# List the applications
-argocd app list
-
-# Create an application
-argocd app create guestbook \
-  --repo https://github.com/argoproj/argocd-example-apps.git \
-  --path guestbook \
-  --dest-server https://kubernetes.default.svc \
-  --dest-namespace default
-
-# Sync the application
-argocd app sync guestbook
-
-# Verify the deployment
-kubectl get svc
-kubectl port-forward service/guestbook-ui 8888:80
+# Uninstall Argo CD
+helm uninstall mygitops -n $NAMESPACE
 ```
 
 # References
 
 - [Docker/Kubernetes 実践コンテナ開発入門 改訂新版](https://gihyo.jp/book/2024/978-4-297-14017-5)
   - https://github.com/gihyodocker
-- [つくって、壊して、直して学ぶ Kubernetes 入門](https://www.shoeisha.co.jp/book/detail/9784798183961)
-  - https://github.com/aoi1/bbf-kubernetes
