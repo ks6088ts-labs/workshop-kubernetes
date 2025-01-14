@@ -248,12 +248,16 @@ argocd login localhost:8080 \
   --password $PASSWORD \
   --insecure
 
+# Create namespace for guestbook
+kubectl create namespace guestbook
+kubectl config set-context --current --namespace=guestbook
+
 # Create an application
 argocd app create guestbook \
   --repo https://github.com/argoproj/argocd-example-apps.git \
   --path guestbook \
   --dest-server https://kubernetes.default.svc \
-  --dest-namespace default
+  --dest-namespace guestbook
 
 # List the applications
 argocd app list
@@ -285,11 +289,12 @@ helm repo update
 
 # Create the namespace
 NAMESPACE=monitoring
-kubectl create ns $NAMESPACE
+RELEASE_NAME=kube-prometheus-stack
 
 # Deploy Prometheus
-helm install kube-prometheus-stack \
-  --namespace monitoring \
+helm install $RELEASE_NAME \
+  --namespace $NAMESPACE \
+  --create-namespace \
   prometheus-community/kube-prometheus-stack
 
 # Verify the deployment
@@ -303,7 +308,7 @@ kubectl port-forward service/kube-prometheus-stack-prometheus 9090:9090 -n $NAME
 kubectl port-forward service/kube-prometheus-stack-grafana 3000:80 -n $NAMESPACE
 
 # Delete the deployment
-helm uninstall kube-prometheus-stack -n $NAMESPACE
+helm uninstall $RELEASE_NAME -n $NAMESPACE
 ```
 
 Collect metrics from the HTTP server.
@@ -314,7 +319,7 @@ kubectl apply -f k8s/collect-metrics/namespace.yaml
 kubectl apply -f k8s/collect-metrics/http-server.yaml
 
 # Update the Prometheus configuration
-helm upgrade kube-prometheus-stack \
+helm upgrade $RELEASE_NAME \
   -f k8s/collect-metrics/kube-prometheus-stack-values.yaml \
   -n $NAMESPACE \
   prometheus-community/kube-prometheus-stack
@@ -330,16 +335,19 @@ kubectl port-forward service/kube-prometheus-stack-prometheus 9090:9090 -n $NAME
 
 ```shell
 REPO_NAME=argo-cd
+NAMESPACE=gitops
+RELEASE_NAME=mygitops
+
 helm repo add $REPO_NAME https://argoproj.github.io/argo-helm
 
-NAMESPACE=gitops
+helm install \
+  --namespace $NAMESPACE \
+  --create-namespace \
+  $RELEASE_NAME \
+  $REPO_NAME/argo-cd
 
-# Deploy Argo CD
-kubectl create namespace $NAMESPACE
 # Set the namespace
 kubectl config set-context --current --namespace=$NAMESPACE
-
-helm install -n $NAMESPACE mygitops $REPO_NAME/argo-cd
 
 helm list --all-namespaces
 
@@ -360,6 +368,9 @@ helm uninstall mygitops -n $NAMESPACE
 ```shell
 # Install k9s
 go install github.com/derailed/k9s@latest
+
+# Run k9s
+k9s
 ```
 
 # References
