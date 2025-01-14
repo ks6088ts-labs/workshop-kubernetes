@@ -350,6 +350,18 @@ kubectl port-forward service/mygitops-argocd-server 8080:443
 helm uninstall mygitops -n $NAMESPACE
 ```
 
+## Tools
+
+### k9s
+
+- [k9s](https://github.com/derailed/k9s)
+- [k9s 使い方まとめ](https://qiita.com/t0m0ya/items/15ee4d43dcda4701946c)
+
+```shell
+# Install k9s
+go install github.com/derailed/k9s@latest
+```
+
 # References
 
 - [Docker/Kubernetes 実践コンテナ開発入門 改訂新版](https://gihyo.jp/book/2024/978-4-297-14017-5)
