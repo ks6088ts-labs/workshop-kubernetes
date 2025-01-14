@@ -22,8 +22,10 @@ THE SOFTWARE.
 package sandbox
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
+	"math/rand"
 	"net/http"
 
 	"github.com/prometheus/client_golang/prometheus/promhttp"
@@ -56,6 +58,44 @@ var httpCmd = &cobra.Command{
 
 		http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 			fmt.Fprintf(w, "Hello, world!")
+		})
+
+		http.HandleFunc("/flaky", func(w http.ResponseWriter, r *http.Request) {
+			// Ensure POST method
+			if r.Method != http.MethodPost {
+				w.WriteHeader(http.StatusMethodNotAllowed)
+				fmt.Fprintln(w, "Method Not Allowed")
+				return
+			}
+
+			// Define request structure
+			type flakyRequest struct {
+				Percent int `json:"percent"`
+			}
+
+			// Decode JSON
+			var reqBody flakyRequest
+			err := json.NewDecoder(r.Body).Decode(&reqBody)
+			if err != nil {
+				w.WriteHeader(http.StatusBadRequest)
+				fmt.Fprintln(w, "Bad Request")
+				return
+			}
+
+			// Use default if not specified
+			if reqBody.Percent <= 0 || reqBody.Percent > 100 {
+				reqBody.Percent = 50
+			}
+
+			// Return 500 if random < reqBody.Percent
+			if rand.Intn(100) < reqBody.Percent {
+				w.WriteHeader(http.StatusInternalServerError)
+				fmt.Fprintln(w, "Internal Server Error")
+				return
+			}
+
+			w.WriteHeader(http.StatusOK)
+			fmt.Fprintln(w, "Success")
 		})
 
 		log.Printf("Starting server on port %d\n", port)
