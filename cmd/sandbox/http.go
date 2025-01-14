@@ -78,7 +78,7 @@ var httpCmd = &cobra.Command{
 			err := json.NewDecoder(r.Body).Decode(&reqBody)
 			if err != nil {
 				w.WriteHeader(http.StatusBadRequest)
-				fmt.Fprintln(w, "Bad Request")
+				fmt.Fprintln(w, "Invalid JSON format in request body")
 				return
 			}
 
