@@ -75,6 +75,28 @@ kubectl config -h
 kubectl config get-contexts
 ```
 
+### Manage AKS Cluster
+
+- [Stop and start an Azure Kubernetes Service (AKS) cluster](https://learn.microsoft.com/azure/aks/start-stop-cluster?tabs=azure-cli)
+
+```shell
+# Start the AKS cluster
+az aks start \
+  --name $CLUSTER_NAME \
+  --resource-group $RESOURCE_GROUP_NAME
+
+# Verify the AKS cluster status
+az aks show \
+  --name $CLUSTER_NAME \
+  --resource-group $RESOURCE_GROUP_NAME
+
+# Stop the AKS cluster
+az aks stop \
+  --name $CLUSTER_NAME \
+  --resource-group $RESOURCE_GROUP_NAME \
+  --no-wait
+```
+
 ## Deploy Applications
 
 ### Kubernetes Dashboard
