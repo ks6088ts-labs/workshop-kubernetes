@@ -413,6 +413,47 @@ kubectl get secret myiam-keycloak \
 # Login to Keycloak at http://localhost:8080 with username `user` and the password
 ```
 
+### Ingress-Nginx Controller
+
+- [Ingress NGINX Controller](https://github.com/kubernetes/ingress-nginx)
+- [Installation Guide](https://kubernetes.github.io/ingress-nginx/deploy/#quick-start)
+- [Create an ingress controller](https://learn.microsoft.com/troubleshoot/azure/azure-kubernetes/load-bal-ingress-c/create-unmanaged-ingress-controller?tabs=azure-cli)
+
+```shell
+NAMESPACE=ingress-basic
+
+# use a YAML manifest to deploy the Ingress-Nginx Controller
+# kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.12.0/deploy/static/provider/cloud/deploy.yaml
+
+# Use Helm to deploy the Ingress-Nginx Controller
+helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
+helm repo update
+
+# Deploy the Ingress-Nginx Controller
+helm install ingress-nginx ingress-nginx/ingress-nginx \
+  --create-namespace \
+  --namespace $NAMESPACE \
+  --set controller.service.annotations."service\.beta\.kubernetes\.io/azure-load-balancer-health-probe-request-path"=/healthz \
+  --set controller.service.externalTrafficPolicy=Local
+
+# Verify the deployment
+kubectl get svc -n $NAMESPACE
+
+# Uninstall the Ingress-Nginx Controller
+helm uninstall ingress-nginx -n $NAMESPACE
+```
+
+- [Ingress](https://kubernetes.io/docs/concepts/services-networking/ingress/)
+
+```shell
+# Deploy Ingress resource
+kubectl apply -f k8s/collect-metrics/ingress.yaml
+
+# Verify the deployment
+EXTERNAL_IP=xxx.xxx.xxx.xxx
+curl http://$EXTERNAL_IP/http-server --verbose
+```
+
 ## Tools
 
 ### k9s
