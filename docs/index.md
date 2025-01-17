@@ -380,6 +380,39 @@ kubectl port-forward service/mygitops-argocd-server 8080:443
 helm uninstall mygitops -n $NAMESPACE
 ```
 
+### Keycloak
+
+- [Bitnami package for Keycloak](https://bitnami.com/stack/keycloak/helm)
+- [Installing the Chart](https://github.com/bitnami/charts/tree/main/bitnami/keycloak/#installing-the-chart)
+
+```shell
+NAMESPACE=iam
+RELEASE_NAME=myiam
+
+# Install Keycloak
+helm install \
+  --namespace $NAMESPACE \
+  --create-namespace \
+  $RELEASE_NAME \
+  oci://registry-1.docker.io/bitnamicharts/keycloak
+
+# Verify the deployment
+helm list --all-namespaces
+
+# Set namespace
+kubens $NAMESPACE
+
+# Port forward
+kubectl port-forward service/myiam-keycloak 8080:80
+
+# Retrieve the admin password
+# https://github.com/bitnami/charts/issues/17522#issuecomment-1626921535
+kubectl get secret myiam-keycloak \
+  --output jsonpath='{.data.admin-password}' | base64 -d && echo
+
+# Login to Keycloak at http://localhost:8080 with username `user` and the password
+```
+
 ## Tools
 
 ### k9s
