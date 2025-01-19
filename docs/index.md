@@ -83,7 +83,8 @@ kubectl config get-contexts
 # Start the AKS cluster
 az aks start \
   --name $CLUSTER_NAME \
-  --resource-group $RESOURCE_GROUP_NAME
+  --resource-group $RESOURCE_GROUP_NAME \
+  --no-wait
 
 # Verify the AKS cluster status
 az aks show \
@@ -452,6 +453,87 @@ kubectl apply -f k8s/collect-metrics/ingress.yaml
 # Verify the deployment
 EXTERNAL_IP=xxx.xxx.xxx.xxx
 curl http://$EXTERNAL_IP/http-server --verbose
+```
+
+### cert-manager
+
+- [Installing with Helm](https://cert-manager.io/docs/installation/helm/)
+- [Deploy cert-manager on Azure Kubernetes Service (AKS) and use Let's Encrypt to sign a certificate for an HTTPS website](https://cert-manager.io/docs/tutorials/getting-started-aks-letsencrypt/)
+
+```shell
+# Set the default values
+RANDOM_SUFFIX=DEADBEEF
+
+export AZURE_DEFAULTS_GROUP=rg-workshop-kubernetes-$RANDOM_SUFFIX
+export AZURE_DEFAULTS_LOCATION=japaneast
+export DOMAIN_NAME=cert-manager-$RANDOM_SUFFIX.site
+
+# Create a public domain name
+az network dns zone create --name $DOMAIN_NAME
+
+# Verify the DNS zone
+az network dns zone show --name $DOMAIN_NAME --output yaml
+dig $DOMAIN_NAME ns +trace +nodnssec
+```
+
+Install cert-manager
+
+```shell
+# Add the Jetstack Helm repository
+helm repo add jetstack https://charts.jetstack.io --force-update
+
+# Install cert-manager
+helm install \
+  cert-manager jetstack/cert-manager \
+  --namespace cert-manager \
+  --create-namespace \
+  --version v1.16.2 \
+  --set crds.enabled=true
+
+# Verify the installation
+kubectl -n cert-manager get all
+kubectl explain Certificate
+kubectl explain CertificateRequest
+kubectl explain Issuer
+```
+
+Create a test ClusterIssuer and a Certificate
+
+```shell
+# Create a ClusterIssuer
+kubectl apply -f k8s/cert-manager/clusterissuer-selfsigned.yaml
+
+# Create a Certificate
+envsubst < k8s/cert-manager/certificate.yaml | kubectl apply -f -
+
+# Verify the Certificate
+cmctl status certificate www
+cmctl inspect secret www-tls
+```
+
+Deploy a sample web server
+
+```shell
+# Deploy the web server
+kubectl apply -f k8s/cert-manager/deployment.yaml
+
+# Deploy the LoadBalancer service
+export AZURE_LOADBALANCER_DNS_LABEL_NAME=lb-$(uuidgen)
+envsubst < k8s/cert-manager/service.yaml | kubectl apply -f -
+
+kubectl get service helloweb --watch
+
+# Create DNS CNAME record
+az network dns record-set cname set-record \
+    --zone-name $DOMAIN_NAME \
+    --cname $AZURE_LOADBALANCER_DNS_LABEL_NAME.$AZURE_DEFAULTS_LOCATION.cloudapp.azure.com \
+    --record-set-name www
+
+# Verify the DNS record
+dig www.$DOMAIN_NAME A
+
+# Verify the web server
+curl --insecure -v https://www.$DOMAIN_NAME
 ```
 
 ## Tools
