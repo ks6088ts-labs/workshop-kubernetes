@@ -83,7 +83,8 @@ kubectl config get-contexts
 # Start the AKS cluster
 az aks start \
   --name $CLUSTER_NAME \
-  --resource-group $RESOURCE_GROUP_NAME
+  --resource-group $RESOURCE_GROUP_NAME \
+  --no-wait
 
 # Verify the AKS cluster status
 az aks show \
@@ -298,6 +299,49 @@ argocd app delete guestbook --yes
 ## Use helm to deploy apps
 
 - [Helm > Quickstart Guide](https://helm.sh/docs/intro/quickstart/)
+- [Artifact Hub](https://artifacthub.io/)
+
+```shell
+# Variables
+CHART_REPOSITORY_NAME=prometheus-community
+CHART_REPOSITORY_URL=https://prometheus-community.github.io/helm-charts
+RELEASE_NAME=my-prometheus-stack
+CHART_NAME=kube-prometheus-stack
+NAMESPACE=monitoring
+VERSION=68.2.1
+VALUES_FILE=k8s/collect-metrics/kube-prometheus-stack-values.yaml
+
+# Add the Prometheus Helm repository
+helm repo add $CHART_REPOSITORY_NAME $CHART_REPOSITORY_URL
+
+# Search for the chart
+helm search repo $CHART_REPOSITORY_NAME/$CHART_NAME --versions
+
+# Deploy the chart
+helm install $RELEASE_NAME $CHART_REPOSITORY_NAME/$CHART_NAME \
+  --namespace $NAMESPACE \
+  --create-namespace \
+  --version $VERSION \
+  --values $VALUES_FILE
+
+# Verify the deployment
+helm list -n $NAMESPACE
+
+# Access to the Prometheus dashboard
+kubectl port-forward -n $NAMESPACE services/$RELEASE_NAME-kube-p-prometheus 9090:9090
+# Access to the Grafana dashboard (username: admin, password: prom-operator)
+kubectl port-forward -n $NAMESPACE services/$RELEASE_NAME-grafana 3000:80
+
+# Create helm chart
+CHART_NAME=charts/my-chart
+mkdir -p charts
+
+helm create $CHART_NAME
+helm template $CHART_NAME
+helm package $CHART_NAME \
+  --version v0.0.1 \
+  --app-version v0.0.1
+```
 
 ### Prometheus
 
