@@ -98,6 +98,31 @@ az aks stop \
   --no-wait
 ```
 
+### Debug AKS Cluster
+
+```shell
+# Get all the pods in the cluster
+kubectl get pods --all-namespaces
+
+# Execute a command in a container
+POD_NAME=my-prometheus-stack-grafana-77cb798f94-plsqf
+kubectl exec -n monitoring -it $POD_NAME -- sh
+
+# Create and run a particular image in a pod.
+kubectl run -it --rm debug --image=ubuntu:latest --restart=Never -- sh
+```
+
+Inside the container, you can run the following commands.
+
+```shell
+apt update && apt install -y curl
+
+# Name resolution test
+# curl http://<service-name>.<namespace>.svc.cluster.local:<port>
+curl http://http-server.develop.svc.cluster.local:8080
+curl http://my-prometheus-stack-prometheus-node-exporter.monitoring.svc.cluster.local:9100/metrics
+```
+
 ## Deploy Applications
 
 ### Kubernetes Dashboard
@@ -491,7 +516,10 @@ helm uninstall ingress-nginx -n $NAMESPACE
 
 ```shell
 # Deploy Ingress resource
-kubectl apply -f k8s/collect-metrics/ingress.yaml
+kubectl apply -f k8s/ingress.yaml
+
+kubens $NAMESPACE
+kubectl get svc
 
 # Verify the deployment
 EXTERNAL_IP=xxx.xxx.xxx.xxx
