@@ -526,6 +526,29 @@ EXTERNAL_IP=xxx.xxx.xxx.xxx
 curl http://$EXTERNAL_IP/http-server --verbose
 ```
 
+### Elastic Stack
+
+- [Elastic Stack Helm Chart](https://www.elastic.co/guide/en/cloud-on-k8s/current/k8s-stack-helm-chart.html)
+
+```shell
+NAMESPACE=elastic-stack
+
+# Add the Elastic Helm repository
+helm repo add elastic https://helm.elastic.co
+helm repo update
+
+# Search for the Elastic Stack chart
+helm search repo elastic/
+
+# Deploy the Elastic Stack
+helm install es-quickstart elastic/eck-stack \
+  -n $NAMESPACE \
+  --create-namespace
+
+# Verify the deployment
+helm list --all-namespaces
+```
+
 ## Tools
 
 ### k9s
