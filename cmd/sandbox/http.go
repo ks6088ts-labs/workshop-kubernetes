@@ -22,15 +22,108 @@ THE SOFTWARE.
 package sandbox
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"log"
 	"math/rand"
 	"net/http"
+	"os"
+	"os/signal"
+	"time"
 
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/spf13/cobra"
 )
+
+// server represents the HTTP server.
+type server struct {
+	port   int
+	server *http.Server
+}
+
+// newServer creates a new server instance.
+func newServer(port int) *server {
+	return &server{
+		port: port,
+		server: &http.Server{
+			Addr: fmt.Sprintf(":%d", port),
+		},
+	}
+}
+
+// setupRoutes sets up the HTTP routes and handlers.
+func (s *server) setupRoutes() {
+	http.HandleFunc("/healthz", func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path != "/healthz" {
+			http.NotFound(w, r)
+			return
+		}
+		w.WriteHeader(http.StatusOK)
+		fmt.Fprintf(w, "OK")
+	})
+
+	http.Handle("/metrics", promhttp.Handler())
+
+	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprintf(w, "Hello, world!")
+	})
+
+	http.HandleFunc("/flaky", func(w http.ResponseWriter, r *http.Request) {
+		// Ensure POST method
+		if r.Method != http.MethodPost {
+			w.WriteHeader(http.StatusMethodNotAllowed)
+			fmt.Fprintln(w, "Method Not Allowed")
+			return
+		}
+
+		// Define request structure
+		type flakyRequest struct {
+			Percent int `json:"percent"`
+		}
+
+		// Decode JSON
+		var reqBody flakyRequest
+		err := json.NewDecoder(r.Body).Decode(&reqBody)
+		if err != nil {
+			w.WriteHeader(http.StatusBadRequest)
+			fmt.Fprintln(w, "Invalid JSON format in request body")
+			return
+		}
+
+		// Use default if not specified
+		if reqBody.Percent <= 0 || reqBody.Percent > 100 {
+			reqBody.Percent = 50
+		}
+
+		// Return 500 if random < reqBody.Percent
+		if rand.Intn(100) < reqBody.Percent {
+			w.WriteHeader(http.StatusInternalServerError)
+			fmt.Fprintln(w, "Internal Server Error")
+			return
+		}
+
+		w.WriteHeader(http.StatusOK)
+		fmt.Fprintln(w, "Success")
+	})
+}
+
+// start starts the HTTP server.
+func (s *server) start() {
+	s.setupRoutes()
+	log.Printf("Starting server on port %d\n", s.port)
+	go func() {
+		if err := s.server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			log.Fatalf("Could not listen on port %d: %v\n", s.port, err)
+		}
+	}()
+}
+
+// shutdown gracefully shuts down the HTTP server.
+func (s *server) shutdown(ctx context.Context) error {
+	log.Println("Shutting down server...")
+	return s.server.Shutdown(ctx)
+}
 
 // httpCmd represents the http command
 var httpCmd = &cobra.Command{
@@ -45,64 +138,23 @@ var httpCmd = &cobra.Command{
 			log.Fatal(err)
 		}
 
-		http.HandleFunc("/healthz", func(w http.ResponseWriter, r *http.Request) {
-			if r.URL.Path != "/healthz" {
-				http.NotFound(w, r)
-				return
-			}
-			w.WriteHeader(http.StatusOK)
-			fmt.Fprintf(w, "OK")
-		})
+		// Create and start server
+		srv := newServer(port)
+		srv.start()
 
-		http.Handle("/metrics", promhttp.Handler())
+		// Wait for interrupt signal to gracefully shutdown the server
+		quit := make(chan os.Signal, 1)
+		signal.Notify(quit, os.Interrupt)
+		<-quit
 
-		http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-			fmt.Fprintf(w, "Hello, world!")
-		})
-
-		http.HandleFunc("/flaky", func(w http.ResponseWriter, r *http.Request) {
-			// Ensure POST method
-			if r.Method != http.MethodPost {
-				w.WriteHeader(http.StatusMethodNotAllowed)
-				fmt.Fprintln(w, "Method Not Allowed")
-				return
-			}
-
-			// Define request structure
-			type flakyRequest struct {
-				Percent int `json:"percent"`
-			}
-
-			// Decode JSON
-			var reqBody flakyRequest
-			err := json.NewDecoder(r.Body).Decode(&reqBody)
-			if err != nil {
-				w.WriteHeader(http.StatusBadRequest)
-				fmt.Fprintln(w, "Invalid JSON format in request body")
-				return
-			}
-
-			// Use default if not specified
-			if reqBody.Percent <= 0 || reqBody.Percent > 100 {
-				reqBody.Percent = 50
-			}
-
-			// Return 500 if random < reqBody.Percent
-			if rand.Intn(100) < reqBody.Percent {
-				w.WriteHeader(http.StatusInternalServerError)
-				fmt.Fprintln(w, "Internal Server Error")
-				return
-			}
-
-			w.WriteHeader(http.StatusOK)
-			fmt.Fprintln(w, "Success")
-		})
-
-		log.Printf("Starting server on port %d\n", port)
-		err = http.ListenAndServe(fmt.Sprintf(":%d", port), nil)
-		if err != nil {
-			log.Fatal(err)
+		// Gracefully shutdown the server with a timeout of 5 seconds
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+		if err := srv.shutdown(ctx); err != nil {
+			log.Fatal("Server forced to shutdown:", err)
 		}
+
+		log.Println("Server exiting")
 	},
 }
 
