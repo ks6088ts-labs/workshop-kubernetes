@@ -1,0 +1,64 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: workshop-llm-agents
+spec:
+  replicas: 2
+  revisionHistoryLimit: 3
+  selector:
+    matchLabels:
+      app: workshop-llm-agents
+  template:
+    metadata:
+      labels:
+        app: workshop-llm-agents
+    spec:
+      containers:
+      - name: workshop-llm-agents
+        image: ks6088ts/workshop-llm-agents:0.0.10
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "100m"
+          limits:
+            memory: "256Mi"
+            cpu: "100m"
+        ports:
+        - containerPort: 8501
+          name: llm-agents-port
+          protocol: TCP
+        env:
+        # Microsoft Entra ID
+        - name: USE_MICROSOFT_ENTRA_ID
+          value: "False"
+        - name: AZURE_CLIENT_ID
+          value: "<YOUR_CLIENT_ID>"
+        - name: AZURE_CLIENT_SECRET
+          value: "<YOUR_CLIENT_SECRET>"
+        - name: AZURE_TENANT_ID
+          value: "<YOUR_TENANT_ID>"
+        # Azure OpenAI Service
+        - name: AZURE_OPENAI_ENDPOINT
+          value: "https://<YOUR_AOAI_NAME>.openai.azure.com/"
+        - name: AZURE_OPENAI_API_KEY
+          value: "<YOUR_API_KEY>"
+        - name: AZURE_OPENAI_API_VERSION
+          value: "2024-10-21"
+        - name: AZURE_OPENAI_MODEL_EMBEDDING
+          value: "text-embedding-3-large"
+        - name: AZURE_OPENAI_MODEL_GPT
+          value: "gpt-4o"
+        # Bing Search
+        - name: BING_SEARCH_URL
+          value: "https://api.bing.microsoft.com/v7.0/search"
+        - name: BING_SUBSCRIPTION_KEY
+          value: "<YOUR_BING_SUBSCRIPTION_KEY>"
+        # Azure Cosmos DB
+        - name: AZURE_COSMOS_DB_CONNECTION_STRING
+          value: "AccountEndpoint=https://<YOUR_COSMOSDB_NAME>.documents.azure.com:443/;AccountKey=<ACCOUNT_KEY>;"
+        - name: AZURE_COSMOS_DB_DATABASE_NAME
+          value: "workshop"
+        - name: AZURE_COSMOS_DB_CONTAINER_NAME
+          value: "chat"
+        - name: AZURE_COSMOS_DB_ENDPOINT
+          value: "https://<YOUR_COSMOSDB_NAME>.documents.azure.com:443/"

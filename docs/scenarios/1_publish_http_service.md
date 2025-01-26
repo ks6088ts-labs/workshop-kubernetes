@@ -6,7 +6,7 @@
 
 - [AKS クラスターのセットアップ](./0_setup_aks_cluster.md) を完了していること
 
-### Ingress-Nginx Controller
+## Ingress-Nginx Controller のデプロイ
 
 - [Ingress NGINX Controller](https://github.com/kubernetes/ingress-nginx)
 - [Installation Guide](https://kubernetes.github.io/ingress-nginx/deploy/#quick-start)
@@ -36,6 +36,10 @@ kubectl get svc -n $NAMESPACE
 helm uninstall ingress-nginx -n $NAMESPACE
 ```
 
+## サービスのデプロイ
+
+### Ingress を使用した HTTP サービスの公開
+
 - [Ingress](https://kubernetes.io/docs/concepts/services-networking/ingress/)
 
 ```shell
@@ -49,12 +53,19 @@ kubens $NAMESPACE
 # HTTP サーバーのデプロイ
 kubectl apply -f k8s/http-server/
 
-# Deploy Ingress resource
-kubectl apply -f k8s/ingress.yaml
-
 kubectl get svc -A
 
 # Verify the deployment
 EXTERNAL_IP=xxx.xxx.xxx.xxx
 curl http://$EXTERNAL_IP/http-server --verbose
+```
+
+### LoadBalancer を使用した HTTP サービスの公開
+
+```shell
+# サービスのデプロイ
+NAMESPACE=develop
+kubectl apply -f k8s/workshop-llm-agents/ --namespace $NAMESPACE
+
+kubectl get svc --namespace $NAMESPACE
 ```

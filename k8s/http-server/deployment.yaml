@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
       - name: http-server
-        image: ks6088ts/workshop-kubernetes:latest
+        image: ks6088ts/workshop-kubernetes:0.0.5
         resources:
           requests:
             memory: "256Mi"
