@@ -32,6 +32,8 @@ import (
 	"os/signal"
 	"time"
 
+	"github.com/ks6088ts-labs/workshop-kubernetes/internal"
+
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/spf13/cobra"
 )
@@ -66,7 +68,9 @@ func (s *server) setupRoutes() {
 	http.Handle("/metrics", promhttp.Handler())
 
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprintf(w, "Hello, world!")
+		// Write version and revision in json format
+		w.Header().Set("Content-Type", "application/json")
+		fmt.Fprintf(w, `{"version": "%s", "revision": "%s"}`, internal.Version, internal.Revision)
 	})
 
 	http.HandleFunc("/flaky", func(w http.ResponseWriter, r *http.Request) {
