@@ -35,9 +35,9 @@ kubectl port-forward service/argocd-server 8080:443
 - [クラウドネイティブで実現する マイクロサービス開発・運用 実践ガイド > 7.2 　 Argo CD による GitOps の実装](https://gihyo.jp/book/2023/978-4-297-13783-0)
 
 ```shell
-REPO_NAME=argo-cd
-NAMESPACE=gitops
-RELEASE_NAME=mygitops
+REPO_NAME=argo
+NAMESPACE=argo-cd
+RELEASE_NAME=my-argo-cd
 
 helm repo add $REPO_NAME https://argoproj.github.io/argo-helm
 
@@ -53,10 +53,10 @@ kubectl config set-context --current --namespace=$NAMESPACE
 helm list -A
 
 # Access The Argo CD API Server
-kubectl port-forward service/mygitops-argocd-server 8080:443
+kubectl port-forward service/$RELEASE_NAME-argocd-server 8080:443
 
 # Uninstall Argo CD
-helm uninstall mygitops -n $NAMESPACE
+helm uninstall $RELEASE_NAME -n $NAMESPACE
 ```
 
 ### アプリケーションのデプロイ
@@ -114,6 +114,50 @@ kubectl port-forward -n guestbook service/guestbook-ui 8888:80
 
 # Delete the application
 argocd app delete guestbook --yes
+```
+
+### Argo Workflows のデプロイ
+
+- [Argo Workflows - The workflow engine for Kubernetes > Quick Start](https://argo-workflows.readthedocs.io/en/latest/quick-start/)
+
+```shell
+REPO_NAME=argo
+NAMESPACE=argo-workflows
+RELEASE_NAME=my-argo-workflows
+
+helm install \
+  --namespace $NAMESPACE \
+  --create-namespace \
+  $RELEASE_NAME \
+  $REPO_NAME/argo-workflows
+
+kubens $NAMESPACE
+
+# Get token
+POD_NAME=$(kubectl get pods -l app=server -o jsonpath='{.items[0].metadata.name}')
+k exec -it $POD_NAME -- argo auth token
+
+# Access the Argo Workflows UI
+kubectl port-forward svc/$RELEASE_NAME-server 2746:2746 --address='0.0.0.0'
+
+argo list -A
+
+# Create cluster role
+k apply -f k8s/argo-workflows/
+
+# Submit a workflow
+argo submit --watch https://raw.githubusercontent.com/argoproj/argo-workflows/main/examples/hello-world.yaml
+
+# kubectl apply -f - <<EOF
+# apiVersion: rbac.authorization.k8s.io/v1
+# kind: ClusterRole
+# metadata:
+#   name: argo-workflow-argo-workflows-workflow-controller
+# rules:
+# - apiGroups: ["argoproj.io"]
+#   resources: ["workflowtaskresults"]
+#   verbs: ["create", "get", "list", "watch", "update", "patch", "delete"]
+# EOF
 ```
 
 ### HTTP サーバーのデプロイ
