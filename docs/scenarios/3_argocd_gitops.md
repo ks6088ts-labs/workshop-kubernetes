@@ -172,3 +172,35 @@ argocd app create http-server \
 
 argocd app sync http-server
 ```
+
+### Ingress リソースの作成
+
+```shell
+NAMESPACE=argo-workflows
+RELEASE_NAME=my-argo-workflows
+SERVICE=$RELEASE_NAME-server
+PORT=2746
+
+# Ingress リソースの作成
+k -n $NAMESPACE apply -f - <<EOF
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: $NAMESPACE-ingress
+spec:
+  ingressClassName: nginx
+  rules:
+    - http:
+        paths:
+          - pathType: Prefix
+            path: /
+            backend:
+              service:
+                name: $SERVICE
+                port:
+                  number: $PORT
+EOF
+
+# Ingress リソースの削除
+k -n $NAMESPACE delete ingress $NAMESPACE-ingress
+```

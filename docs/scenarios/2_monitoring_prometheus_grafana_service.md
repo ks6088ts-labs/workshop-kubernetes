@@ -89,3 +89,59 @@ helm upgrade $RELEASE_NAME \
   -n $NAMESPACE \
   prometheus-community/kube-prometheus-stack
 ```
+
+### Ingress
+
+#### Grafana
+
+```shell
+# Grafana の Ingress リソースの作成
+k -n monitoring apply -f - <<EOF
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: monitoring-ingress
+spec:
+  ingressClassName: nginx
+  rules:
+    - http:
+        paths:
+          - pathType: Prefix
+            path: /
+            backend:
+              service:
+                name: $RELEASE_NAME-grafana
+                port:
+                  number: 80
+EOF
+
+# Ingress リソースの削除
+k -n monitoring delete ingress monitoring-ingress
+```
+
+#### Prometheus
+
+```shell
+# Grafana の Ingress リソースの作成
+k -n monitoring apply -f - <<EOF
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: monitoring-ingress
+spec:
+  ingressClassName: nginx
+  rules:
+    - http:
+        paths:
+          - pathType: Prefix
+            path: /
+            backend:
+              service:
+                name: $RELEASE_NAME-kube-p-prometheus
+                port:
+                  number: 9090
+EOF
+
+# Ingress リソースの削除
+k -n monitoring delete ingress monitoring-ingress
+```
