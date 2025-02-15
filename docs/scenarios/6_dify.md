@@ -69,3 +69,36 @@ az aks scale \
 ```shell
 k -n $NAMESPACE exec svc/dify-api -- flask reset-password
 ```
+
+### 外部からのアクセス
+
+[Ingress NGINX Controller による HTTP サービスの公開](./1_publish_http_service.md) を参考に、Ingress Controller をデプロイする。その後、以下の手順で Ingress リソースを作成する。
+
+```shell
+# Ingress リソースの作成
+k -n dify apply -f - <<EOF
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: dify-ingress
+spec:
+  ingressClassName: nginx
+  rules:
+    - http:
+        paths:
+          - pathType: Prefix
+            path: /
+            backend:
+              service:
+                name: dify-nginx
+                port:
+                  number: 80
+EOF
+```
+
+不要になった場合は、以下の手順で Ingress リソースを削除する。
+
+```shell
+# Ingress リソースの削除
+k -n $NAMESPACE delete ingress dify-ingress
+```
