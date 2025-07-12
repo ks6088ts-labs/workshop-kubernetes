@@ -1,0 +1,24 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: nginx-ingress
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+spec:
+  rules:
+  - host: www.ks6088ts.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: nginx-service # ステップ2で作成したService名
+            port:
+              number: 80 # Serviceのポート
+  tls: # HTTPSを有効にするための設定
+  - hosts:
+    - www.ks6088ts.com # あなたの独自ドメイン
+    secretName: your-domain-com-tls # Cert-Managerが証明書を保存するKubernetes Secretの名前 (任意)
+
