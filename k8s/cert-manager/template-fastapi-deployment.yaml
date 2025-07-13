@@ -1,0 +1,83 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: template-fastapi-deployment
+spec:
+  replicas: 2 # 任意のレプリカ数
+  selector:
+    matchLabels:
+      app: template-fastapi
+  template:
+    metadata:
+      labels:
+        app: template-fastapi
+    spec:
+      containers:
+      - name: template-fastapi
+        image: ks6088ts/template-fastapi:0.0.11
+        ports:
+        - containerPort: 8000
+        command: ["fastapi", "run", "main.py", "--host", "0.0.0.0", "--port", "8000"]
+        env:
+        # Azure OpenAI Service
+        - name: AZURE_OPENAI_ENDPOINT
+          value: "https://<YOUR_AOAI_NAME>.openai.azure.com/"
+        - name: AZURE_OPENAI_API_KEY
+          value: "<YOUR_API_KEY>"
+        - name: AZURE_OPENAI_API_VERSION
+          value: "2024-10-21"
+        - name: AZURE_OPENAI_MODEL_CHAT
+          value: "gpt-4o"
+        - name: AZURE_OPENAI_MODEL_EMBEDDING
+          value: "text-embedding-3-small"
+        # Azure CosmosDB
+        - name: AZURE_COSMOSDB_CONNECTION_STRING
+          value: "AccountEndpoint=https://<YOUR_COSMOSDB_NAME>.documents.azure.com:443/;AccountKey=<ACCOUNT_KEY>;"
+        - name: AZURE_COSMOSDB_DATABASE_NAME
+          value: "template_fastapi"
+        - name: AZURE_COSMOSDB_CONTAINER_NAME
+          value: "items"
+        # Azure Blob Storage
+        - name: AZURE_BLOB_STORAGE_CONNECTION_STRING
+          value: "DefaultEndpointsProtocol=https;AccountName=<YOUR_STORAGE_ACCOUNT>;AccountKey=<YOUR_ACCOUNT_KEY>;EndpointSuffix=core.windows.net"
+        - name: AZURE_BLOB_STORAGE_CONTAINER_NAME
+          value: "files"
+        # Azure AI Speech
+        - name: AZURE_AI_SPEECH_API_KEY
+          value: "<YOUR_AZURE_AI_SPEECH_API_KEY>"
+        - name: AZURE_AI_SPEECH_ENDPOINT
+          value: "https://<speech-api-name>.cognitiveservices.azure.com/"
+        # Azure AI Foundry
+        - name: AZURE_AI_FOUNDRY_PROJECT_ENDPOINT
+          value: "https://xxx.services.ai.azure.com/api/projects/yyy"
+        - name: AZURE_AI_FOUNDRY_API_KEY
+          value: "<YOUR_API_KEY>"
+        # Chats WebSocket
+        - name: CHATS_WEBSOCKET_URL
+          value: "wss://www.ks6088ts.com/chats"
+        # Microsoft Graph Sites
+        - name: MICROSOFT_GRAPH_TENANT_ID
+          value: "<YOUR_TENANT_ID>"
+        - name: MICROSOFT_GRAPH_CLIENT_ID
+          value: "<YOUR_CLIENT_ID>"
+        - name: MICROSOFT_GRAPH_CLIENT_SECRET
+          value: "<YOUR_CLIENT_SECRET>"
+        - name: MICROSOFT_GRAPH_USER_SCOPES
+          value: "User.Read Sites.Read.All"
+        # Logging Configuration
+        - name: LOG_LEVEL
+          value: "INFO"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: template-fastapi-service
+spec:
+  selector:
+    app: template-fastapi
+  ports:
+    - protocol: TCP
+      port: 80 # Serviceのポート
+      targetPort: 8000 # Podのポート
+  type: ClusterIP # Ingress Controllerがサービスにアクセスするため、ClusterIPで十分
+

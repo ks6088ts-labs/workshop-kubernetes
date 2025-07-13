@@ -10,11 +10,18 @@ spec:
   - host: www.ks6088ts.com
     http:
       paths:
+      # - path: /
+      #   pathType: Prefix
+      #   backend:
+      #     service:
+      #       name: nginx-service # ステップ2で作成したService名
+      #       port:
+      #         number: 80 # Serviceのポート
       - path: /
         pathType: Prefix
         backend:
           service:
-            name: nginx-service # ステップ2で作成したService名
+            name: template-fastapi-service
             port:
               number: 80 # Serviceのポート
   tls: # HTTPSを有効にするための設定

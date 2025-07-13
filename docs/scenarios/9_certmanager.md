@@ -35,3 +35,17 @@ kubectl get certificaterequest -A
 kubectl get certificate -A
 kubectl describe certificate your-domain-com-tls
 ```
+
+### [ks6088ts-labs/template-fastapi](https://github.com/ks6088ts-labs/template-fastapi) をデプロイして公開する
+
+```shell
+# FIXME: 環境変数の設定
+# k8s/cert-manager/template-fastapi-deployment.yaml の env セクションを編集
+
+# FastAPIのデプロイメントを作成
+kubectl apply -f k8s/cert-manager/template-fastapi-deployment.yaml
+
+# Ingressリソースの作成 (仕向けるサービスは template-fastapi-service)
+# https://cert-manager.io/docs/usage/ingress/
+kubectl apply -f k8s/cert-manager/nginx-ingress.yaml
+```
