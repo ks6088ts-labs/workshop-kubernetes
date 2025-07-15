@@ -1,0 +1,16 @@
+apiVersion: cert-manager.io/v1
+
+kind: Certificate
+metadata:
+  name: ks6088ts-com-tls
+spec:
+  secretName: ks6088ts-com-tls
+  issuerRef:
+    name: letsencrypt-prod
+    kind: ClusterIssuer
+  commonName: ks6088ts.com
+  dnsNames:
+    - ks6088ts.com
+    - www.ks6088ts.com
+  privateKey:
+    rotationPolicy: Always

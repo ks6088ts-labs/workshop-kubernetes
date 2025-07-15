@@ -3,29 +3,45 @@ kind: Ingress
 metadata:
   name: nginx-ingress
   annotations:
-    kubernetes.io/ingress.class: nginx
-    cert-manager.io/cluster-issuer: letsencrypt-prod
+    nginx.ingress.kubernetes.io/use-regex: 'true'
+    cert-manager.io/cluster-issuer: 'letsencrypt-prod'
+    nginx.ingress.kubernetes.io/ssl-redirect: 'true'
 spec:
+  ingressClassName: nginx
+  tls:
+    - hosts:
+        - ks6088ts.com
+        - www.ks6088ts.com
+        - api.ks6088ts.com
+      secretName: ks6088ts-com-tls
   rules:
-  - host: www.ks6088ts.com
-    http:
-      paths:
-      # - path: /
-      #   pathType: Prefix
-      #   backend:
-      #     service:
-      #       name: nginx-service # ステップ2で作成したService名
-      #       port:
-      #         number: 80 # Serviceのポート
-      - path: /
-        pathType: Prefix
-        backend:
-          service:
-            name: template-fastapi-service
-            port:
-              number: 80 # Serviceのポート
-  tls: # HTTPSを有効にするための設定
-  - hosts:
-    - www.ks6088ts.com # あなたの独自ドメイン
-    secretName: your-domain-com-tls # Cert-Managerが証明書を保存するKubernetes Secretの名前 (任意)
-
+    - host: ks6088ts.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: nginx-service
+                port:
+                  number: 80
+    - host: www.ks6088ts.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: nginx-service
+                port:
+                  number: 80
+    - host: api.ks6088ts.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: template-fastapi-service
+                port:
+                  number: 80

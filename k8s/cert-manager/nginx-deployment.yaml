@@ -30,4 +30,3 @@ spec:
       port: 80 # Serviceのポート
       targetPort: 80 # Podのポート
   type: ClusterIP # Ingress Controllerがサービスにアクセスするため、ClusterIPで十分
-

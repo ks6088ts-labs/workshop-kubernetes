@@ -17,7 +17,13 @@ kubectl get svc -n ingress-nginx
 # cert-manager を cert-manager 名前空間にデプロイ
 # https://cert-manager.io/docs/installation/kubectl/
 # Install all cert-manager components:
-kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.18.2/cert-manager.yaml
+# kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.18.2/cert-manager.yaml
+helm install \
+  cert-manager jetstack/cert-manager \
+  --namespace cert-manager \
+  --create-namespace \
+  --version v1.18.2 \
+  --set crds.enabled=true
 
 # ClusterIssuerの作成
 # https://cert-manager.io/docs/configuration/acme/
@@ -33,7 +39,7 @@ kubectl get ingress nginx-ingress -w
 # 証明書の状態を確認
 kubectl get certificaterequest -A
 kubectl get certificate -A
-kubectl describe certificate your-domain-com-tls
+kubectl describe certificate ks6088ts-com-tls
 ```
 
 ### [ks6088ts-labs/template-fastapi](https://github.com/ks6088ts-labs/template-fastapi) をデプロイして公開する
