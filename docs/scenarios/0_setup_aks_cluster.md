@@ -23,37 +23,13 @@ az group delete \
   --yes --no-wait --verbose
 ```
 
-#### Terraform
-
-```shell
-# リポジトリのクローン
-git clone https://github.com/ks6088ts-labs/baseline-environment-on-azure-terraform.git
-cd baseline-environment-on-azure-terraform/infra/scenarios/workshop_azure_openai
-
-# 環境変数の設定
-export ARM_SUBSCRIPTION_ID=$(az account show --query id --output tsv)
-export TF_VAR_create_aks="true"
-
-# Terraform の初期化
-terraform init
-
-# Terraform の実行
-terraform apply -auto-approve
-
-# INFO: リソースの削除
-# terraform destroy -auto-approve
-```
-
 ### AKS クラスター接続
 
 - [Stop and start an Azure Kubernetes Service (AKS) cluster](https://learn.microsoft.com/azure/aks/start-stop-cluster?tabs=azure-cli)
 
 ```shell
-cd baseline-environment-on-azure-terraform/infra/scenarios/workshop_azure_openai
-
-# Terraform の出力結果の取得
-RESOURCE_GROUP_NAME=$(terraform output -raw resource_group_name)
-CLUSTER_NAME=$(terraform output -raw aks_cluster_name)
+RESOURCE_GROUP_NAME=your-resource-group-name
+CLUSTER_NAME=your-aks-cluster-name
 
 # AKS クラスターの情報の取得
 az aks get-credentials \
